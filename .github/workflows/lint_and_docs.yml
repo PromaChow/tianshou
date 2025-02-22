@@ -2,7 +2,7 @@ name: PEP8, Types and Docs Check
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   check:
@@ -28,20 +28,22 @@ jobs:
       - name: Install poetry
         uses: abatilo/actions-poetry@v2
       - name: Setup a local virtual environment (if no poetry.toml file)
-        run: 'poetry config virtualenvs.create true --local
+        run: "poetry config virtualenvs.create true --local
 
           poetry config virtualenvs.in-project true --local
 
-          '
+          "
       - id: measurement-7
-        name: Record Measurement After Setup a local virtual environment (if no poetry.toml
+        name:
+          Record Measurement After Setup a local virtual environment (if no poetry.toml
           file)
         uses: green-coding-solutions/eco-ci-energy-estimation@v4
         with:
           json-output: true
           label: Setup a local virtual environment (if no poetry.toml file)
           task: get-measurement
-      - name: Define a cache for the virtual environment based on the dependencies
+      - name:
+          Define a cache for the virtual environment based on the dependencies
           lock file
         uses: actions/cache@v3
         with:

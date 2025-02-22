@@ -2,11 +2,11 @@ name: Ubuntu
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   cpu:
-    if: '!contains(github.event.head_commit.message, ''ci skip'')'
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
     runs-on: ubuntu-latest
     steps:
       - name: Start Energy Measurement
@@ -29,20 +29,22 @@ jobs:
       - name: Install poetry
         uses: abatilo/actions-poetry@v2
       - name: Setup a local virtual environment (if no poetry.toml file)
-        run: 'poetry config virtualenvs.create true --local
+        run: "poetry config virtualenvs.create true --local
 
           poetry config virtualenvs.in-project true --local
 
-          '
+          "
       - id: measurement-7
-        name: Record Measurement After Setup a local virtual environment (if no poetry.toml
+        name:
+          Record Measurement After Setup a local virtual environment (if no poetry.toml
           file)
         uses: green-coding-solutions/eco-ci-energy-estimation@v4
         with:
           json-output: true
           label: Setup a local virtual environment (if no poetry.toml file)
           task: get-measurement
-      - name: Define a cache for the virtual environment based on the dependencies
+      - name:
+          Define a cache for the virtual environment based on the dependencies
           lock file
         uses: actions/cache@v3
         with:
@@ -60,9 +62,9 @@ jobs:
           label: Install the project dependencies
           task: get-measurement
       - name: wandb login
-        run: 'poetry run wandb login e2366d661b89f2bee877c40bee15502d67b7abef
+        run: "poetry run wandb login e2366d661b89f2bee877c40bee15502d67b7abef
 
-          '
+          "
       - id: measurement-12
         name: Record Measurement After wandb login
         uses: green-coding-solutions/eco-ci-energy-estimation@v4
@@ -71,9 +73,9 @@ jobs:
           label: wandb login
           task: get-measurement
       - name: Test with pytest
-        run: 'poetry run poe test
+        run: "poetry run poe test
 
-          '
+          "
       - id: measurement-14
         name: Record Measurement After Test with pytest
         uses: green-coding-solutions/eco-ci-energy-estimation@v4
@@ -105,4 +107,4 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - '3.11'
+          - "3.11"
