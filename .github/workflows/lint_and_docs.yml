@@ -1,27 +1,21 @@
 name: PEP8, Types and Docs Check
-
 on:
-  pull_request:
-    branches:
-      - master
   push:
     branches:
-        - master
-  workflow_dispatch:
-    inputs:
-      debug_enabled:
-        type: boolean
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
-        required: false
-        default: false
+      - main
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup tmate session
+      - name: Start Energy Measurement
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          task: start-measurement
+      - if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
       - name: Cancel previous run
         uses: styfle/cancel-workflow-action@0.11.0
         with:
@@ -31,24 +25,76 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
-      # use poetry and cache installed packages, see https://github.com/marketplace/actions/python-poetry-action
       - name: Install poetry
         uses: abatilo/actions-poetry@v2
       - name: Setup a local virtual environment (if no poetry.toml file)
-        run: |
-          poetry config virtualenvs.create true --local
+        run: 'poetry config virtualenvs.create true --local
+
           poetry config virtualenvs.in-project true --local
-      - uses: actions/cache@v3
-        name: Define a cache for the virtual environment based on the dependencies lock file
+
+          '
+      - id: measurement-7
+        name: Record Measurement After Setup a local virtual environment (if no poetry.toml
+          file)
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
         with:
-          path: ./.venv
+          json-output: true
+          label: Setup a local virtual environment (if no poetry.toml file)
+          task: get-measurement
+      - name: Define a cache for the virtual environment based on the dependencies
+          lock file
+        uses: actions/cache@v3
+        with:
           key: venv-${{ hashFiles('poetry.lock') }}
+          path: ./.venv
       - name: Install the project dependencies
-        run: |
-          poetry install --with dev --extras "eval"
+        run: 'poetry install --with dev --extras "eval"
+
+          '
+      - id: measurement-10
+        name: Record Measurement After Install the project dependencies
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Install the project dependencies
+          task: get-measurement
       - name: Lint
         run: poetry run poe lint
+      - id: measurement-12
+        name: Record Measurement After Lint
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Lint
+          task: get-measurement
       - name: Types
         run: poetry run poe type-check
+      - id: measurement-14
+        name: Record Measurement After Types
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Types
+          task: get-measurement
       - name: Docs
         run: poetry run poe doc-build
+      - id: measurement-16
+        name: Record Measurement After Docs
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          label: Docs
+          task: get-measurement
+      - id: display-measurement
+        name: Display Energy Results
+        uses: green-coding-solutions/eco-ci-energy-estimation@v4
+        with:
+          json-output: true
+          task: display-results
+      - name: Save Total Energy Consumption Data
+        run: echo '${ steps.final-measurement.outputs.data-total-json }' > total_energy_consumption-1740227529.json
+      - name: Upload Energy Consumption Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: total-energy-consumption
+          path: total_energy_consumption-1740227529.json
